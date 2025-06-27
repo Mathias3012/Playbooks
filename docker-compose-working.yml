@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: awx_postgres
+    environment:
+      POSTGRES_DB: awx
+      POSTGRES_USER: awx
+      POSTGRES_PASSWORD: awxpass123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - awx
+
+  redis:
+    image: redis:6
+    container_name: awx_redis
+    networks:
+      - awx
+
+  awx-manage:
+    image: ansible/awx_devel:latest
+    container_name: awx_manage
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_NAME: awx
+      DATABASE_USER: awx
+      DATABASE_PASSWORD: awxpass123
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SECRET_KEY: awxsecretkey123456789
+      AWX_ADMIN_USER: admin
+      AWX_ADMIN_PASSWORD: password123
+    networks:
+      - awx
+    ports:
+      - "8080:8043"
+    volumes:
+      - awx_projects:/var/lib/awx/projects
+    command: >
+      bash -c "
+        awx-manage migrate --noinput &&
+        echo 'Creating superuser...' &&
+        echo \"from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@localhost', 'password123')\" | awx-manage shell &&
+        awx-manage runserver 0.0.0.0:8043
+      "
+
+networks:
+  awx:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  awx_projects: 

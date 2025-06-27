@@ -1,0 +1,21 @@
+services:
+  awx:
+    image: ansible/awx:17.1.0
+    container_name: awx_simple
+    ports:
+      - "8080:8052"
+    environment:
+      - SECRET_KEY=awxsecret
+      - DATABASE_NAME=awx
+      - DATABASE_USER=awx
+      - DATABASE_PASSWORD=awxpass
+      - DATABASE_HOST=awx
+      - DATABASE_PORT=5432
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=password
+    volumes:
+      - awx_data:/var/lib/awx
+    restart: unless-stopped
+
+volumes:
+  awx_data: 
