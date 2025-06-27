@@ -1,0 +1,21 @@
+---
+- name: Hello World Playbook
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Display a hello world message
+      debug:
+        msg: "¡Hola Mundo desde AWX!"
+    
+    - name: Show current date and time
+      debug:
+        msg: "Fecha y hora actual: {{ ansible_date_time.iso8601 }}"
+      when: ansible_date_time is defined
+    
+    - name: Create a simple file
+      copy:
+        content: |
+          Este es un archivo de ejemplo creado por AWX
+          Fecha de creación: {{ ansible_date_time.iso8601 | default('N/A') }}
+        dest: /tmp/awx-hello-world.txt
+      delegate_to: localhost
